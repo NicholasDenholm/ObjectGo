@@ -8,26 +8,61 @@
       font-family: Arial, sans-serif;
       background: radial-gradient(circle at top, #1e293b, #0f172a 80%);
       color: #f1f5f9;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+    }
+
+    .layout {
+      display: flex;
+      width: 100%;
+    }
+
+    .left-panel {
+      flex: 2;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
+      padding: 1rem;
     }
 
-    .container {
-      text-align: center;
+    .video-box {
+      background: #020617;
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 12px;
+      overflow: hidden;
+      width: 100%;
+      max-width: 760px;
+      aspect-ratio: 16 / 9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .video-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #0f172a;
+    }
+
+    .right-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 2rem;
     }
 
     button {
-      display: block;
-      width: 280px;
-      margin: 1rem auto;
+      width: 240px;
       background: linear-gradient(135deg, #0ea5e9, #38bdf8);
       color: #0f172a;
       border: none;
-      padding: 1.2rem 3rem;
-      font-size: 1.3rem;
+      padding: 1.1rem 2rem;
+      font-size: 1.05rem;
       border-radius: 12px;
       cursor: pointer;
       font-weight: bold;
@@ -41,39 +76,70 @@
       opacity: 0.95;
     }
 
-    button:active {
-      transform: translateY(1px);
-      box-shadow: 0 6px 16px rgba(56, 189, 248, 0.3);
+    #response {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #bae6fd;
+      text-align: center;
+      min-height: 2rem;
+      width: 100%;
     }
 
-    #response {
-      margin-top: 1.5rem;
-      font-size: 1rem;
-      color: #bae6fd;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    pre {
+      background: rgba(2, 6, 23, 0.3);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 10px;
+      padding: 0.5rem 0.8rem;
+      font-size: 0.7rem;
+      width: 100%;
+      max-width: 260px;
+      color: #e2e8f0;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <button id="startModelBtn">Start Model</button>
-    <button id="requestBtn">Request</button>
-    <div id="response"></div>
+  <div class="layout">
+    <div class="left-panel">
+      <div class="video-box">
+        <!-- this is the actual YOLO webcam -->
+        <img src="/video_feed" alt="Webcam stream (YOLO)">
+      </div>
+    </div>
+    <div class="right-panel">
+      <button id="startModelBtn">Start model</button>
+      <button id="requestBtn">Request</button>
+      <button id="stopModelBtn" style="background:#f97316; box-shadow:0 8px 20px rgba(249,115,22,0.4);">Stop model</button>
+      <div id="response"></div>
+      <pre id="objectsBox" style="display:none;"></pre>
+    </div>
   </div>
 
   <script>
-    // When "Start Model" is clicked
+    const responseEl = document.getElementById("response");
+    const objectsBox = document.getElementById("objectsBox");
+
     document.getElementById("startModelBtn").addEventListener("click", async () => {
       const res = await fetch("/api/start_model");
       const data = await res.json();
-      document.getElementById("response").innerText = data.message;
+      responseEl.textContent = data.message;
     });
 
-    // When "Request" is clicked
     document.getElementById("requestBtn").addEventListener("click", async () => {
       const res = await fetch("/api/request");
       const data = await res.json();
-      document.getElementById("response").innerText = data.message;
+      responseEl.textContent = data.message;
+      if (data.objects) {
+        objectsBox.style.display = "block";
+        objectsBox.textContent = JSON.stringify(data.objects, null, 2);
+      }
+    });
+
+    document.getElementById("stopModelBtn").addEventListener("click", async () => {
+      const res = await fetch("/api/stop_model");
+      const data = await res.json();
+      responseEl.textContent = data.message;
     });
   </script>
 </body>

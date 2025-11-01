@@ -40,6 +40,13 @@ def start_model():
 
     return jsonify({"message": "Model started successfully!"})
 
+@app.route("/api/stop_model")
+def stop_model():
+    # we will signal the loop via image_detect_api.stop_event
+    image_detect_api.stop_detection()
+    return jsonify({"message": "Stop signal sent."})
+
+
 @app.route("/api/request")
 def make_request():
     """
@@ -51,6 +58,7 @@ def make_request():
         "message": "Request sent successfully!",
         "objects": current_objects
     })
+
 
 
 @app.route('/api/objects', methods=['POST'])
@@ -69,6 +77,23 @@ def receive_objects():
     # Example: just echo back the received objects
     return jsonify({"received_objects": objects}), 200
 
+@app.route("/video_feed")
+def video_feed():
+    def gen():
+        while True:
+            frame = image_detect_api.get_latest_frame()
+            if frame is None:
+                continue
+            import cv2
+            ok, jpeg = cv2.imencode(".jpg", frame)
+            if not ok:
+                continue
+            yield (
+                b"--frame\r\n"
+                b"Content-Type: image/jpeg\r\n\r\n" + jpeg.tobytes() + b"\r\n"
+            )
+
+    return Response(gen(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 
 # ----- Run server -----
