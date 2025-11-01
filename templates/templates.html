@@ -77,8 +77,8 @@
       opacity: 0.95;
     }
     #stopModelBtn {
-      background:#f97316;
-      box-shadow:0 8px 20px rgba(249,115,22,0.4);
+      background: #f97316;
+      box-shadow: 0 8px 20px rgba(249,115,22,0.4);
     }
     #response {
       margin-top: 1rem;
@@ -88,17 +88,59 @@
       min-height: 2rem;
       width: 100%;
     }
-    pre {
-      background: rgba(2, 6, 23, 0.3);
-      border: 1px solid rgba(148, 163, 184, 0.12);
-      border-radius: 10px;
-      padding: 0.5rem 0.8rem;
-      font-size: 0.7rem;
+
+    /* NEW: detected objects panel */
+    #objectsPanel {
+      display: none;
       width: 100%;
-      max-width: 260px;
-      color: #e2e8f0;
-      white-space: pre-wrap;
-      word-break: break-word;
+      max-width: 340px;
+      margin-top: 0.5rem;
+    }
+    #objectsPanelInner {
+      background: rgba(30,41,59,0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(148,163,184,0.15);
+      border-radius: 16px;
+      padding: 1.2rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    #objectsPanelTitle {
+      margin: 0 0 1rem 0;
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: #38bdf8;
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+    #objectsGrid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .object-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.7rem 1rem;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(56,189,248,0.15), rgba(14,165,233,0.05));
+      border: 1px solid rgba(56,189,248,0.25);
+      box-shadow: 0 4px 12px rgba(56,189,248,0.1);
+      transition: all 0.2s ease-in-out;
+    }
+    .object-row:hover {
+      transform: scale(1.02);
+    }
+    .object-name {
+      color: #f1f5f9;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      font-size: 0.85rem;
+    }
+    .object-count {
+      color: #38bdf8;
+      font-weight: 600;
+      font-size: 0.95rem;
     }
   </style>
 </head>
@@ -119,15 +161,81 @@
       <button id="requestBtn">Request</button>
       <button id="stopModelBtn">Stop model</button>
       <div id="response"></div>
-      <pre id="objectsBox" style="display:none;"></pre>
+
+      <!-- nicer detected objects panel -->
+      <div id="objectsPanel">
+        <div id="objectsPanelInner">
+          <h3 id="objectsPanelTitle">Detected Objects</h3>
+          <div id="objectsGrid"></div>
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
     const responseEl = document.getElementById("response");
-    const objectsBox = document.getElementById("objectsBox");
     const videoEl = document.getElementById("videoStream");
     const placeholderEl = document.getElementById("videoPlaceholder");
+    const objectsPanel = document.getElementById("objectsPanel");
+    const objectsGrid = document.getElementById("objectsGrid");
 
-    // 1) START MODEL
-    document.getElementById("startModelBtn").add
+    // START MODEL
+    document.getElementById("startModelBtn").addEventListener("click", async () => {
+      const res = await fetch("/api/start_model");
+      const data = await res.json();
+      responseEl.textContent = data.message;
+
+      // show video now
+      videoEl.src = "/video_feed";
+      videoEl.style.display = "block";
+      placeholderEl.style.display = "none";
+    });
+
+    // REQUEST OBJECTS
+    document.getElementById("requestBtn").addEventListener("click", async () => {
+      const res = await fetch("/api/request");
+      const data = await res.json();
+      responseEl.textContent = data.message;
+
+      if (data.objects && Object.keys(data.objects).length > 0) {
+        // show panel
+        objectsPanel.style.display = "block";
+        // clear old
+        objectsGrid.innerHTML = "";
+
+        // build cards
+        Object.entries(data.objects).forEach(([name, count]) => {
+          const row = document.createElement("div");
+          row.className = "object-row";
+
+          const label = document.createElement("span");
+          label.className = "object-name";
+          label.textContent = name.toUpperCase();
+
+          const countEl = document.createElement("span");
+          countEl.className = "object-count";
+          countEl.textContent = count;
+
+          row.append(label, countEl);
+          objectsGrid.appendChild(row);
+        });
+      } else {
+        objectsPanel.style.display = "block";
+        objectsGrid.innerHTML = `<div style="text-align:center; color:#94a3b8; font-size:0.8rem;">No objects detected.</div>`;
+      }
+    });
+
+    // STOP MODEL
+    document.getElementById("stopModelBtn").addEventListener("click", async () => {
+      const res = await fetch("/api/stop_model");
+      const data = await res.json();
+      responseEl.textContent = data.message;
+
+      // hide video again
+      videoEl.style.display = "none";
+      videoEl.removeAttribute("src");
+      placeholderEl.style.display = "block";
+    });
+  </script>
+</body>
+</html>
