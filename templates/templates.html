@@ -84,7 +84,7 @@
       width: 100%;
     }
 
-    /* scrollable detected objects panel */
+    /* detected objects panel */
     #objectsPanel {
       display: none;
       width: 100%;
@@ -101,6 +101,7 @@
       background-color: #38bdf8;
       border-radius: 6px;
     }
+
     #objectsPanelInner {
       background: rgba(30,41,59,0.6);
       backdrop-filter: blur(8px);
@@ -178,8 +179,6 @@
     const placeholderEl = document.getElementById("videoPlaceholder");
     const objectsPanel = document.getElementById("objectsPanel");
     const objectsGrid = document.getElementById("objectsGrid");
-
-    // we'll store poll timer here so we can stop it
     let pollTimer = null;
 
     // render function
@@ -219,12 +218,11 @@
       const data = await res.json();
       responseEl.textContent = data.message;
 
-      // show video
       videoEl.src = "/video_feed";
       videoEl.style.display = "block";
       placeholderEl.style.display = "none";
 
-      // start polling every 1.5s for latest detections
+      // start polling every 1.5s
       if (pollTimer) clearInterval(pollTimer);
       pollTimer = setInterval(async () => {
         try {
@@ -243,15 +241,18 @@
       const data = await res.json();
       responseEl.textContent = data.message;
 
+      // hide webcam
       videoEl.style.display = "none";
       videoEl.removeAttribute("src");
       placeholderEl.style.display = "block";
 
-      // stop polling
+      // stop polling and clear objects
       if (pollTimer) {
         clearInterval(pollTimer);
         pollTimer = null;
       }
+      objectsGrid.innerHTML = "";
+      objectsPanel.style.display = "none";
     });
   </script>
 </body>
