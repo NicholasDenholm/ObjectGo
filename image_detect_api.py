@@ -127,6 +127,7 @@ def get_latest_frame():
 
 def stop_detection():
     stop_event.set()
+    state.detected_objects = {}
     state.new_frame(None)
     
 
