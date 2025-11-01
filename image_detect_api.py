@@ -136,6 +136,8 @@ def run_webcam_detection():
     
     STATE_UPDATE_INTERVAL = 2  # seconds
     last_update_time = 0  # track last update
+    previous_objects = {}  # store last detected counts
+
 
 
     while True:
@@ -153,6 +155,30 @@ def run_webcam_detection():
             state.update(results, model)  # update detection state
             last_update_time = current_time
             print("Updated state:", state.get_state())
+        # Build dict of current frame’s object counts
+        current_objects = {}
+        for r in results:
+            for cls_idx in r.boxes.cls:
+                name = model.names[int(cls_idx)]
+                current_objects[name] = current_objects.get(name, 0) + 1
+
+
+        # Compute change ratio vs previous_objects
+        def compute_change_ratio(old, new):
+            all_keys = set(old.keys()) | set(new.keys())
+            total_diff = sum(abs(new.get(k, 0) - old.get(k, 0)) for k in all_keys)
+            total_old = sum(old.values()) or 1
+            return total_diff / total_old
+
+        ratio = compute_change_ratio(previous_objects, current_objects)
+
+        # --- Update only if >20% change OR 2s passed ---
+        current_time = time.time()
+        if ratio > 0.2 or (current_time - last_update_time >= STATE_UPDATE_INTERVAL):
+            state.update(results, model)
+            last_update_time = current_time
+            previous_objects = current_objects
+            print(f"Updated state ({ratio*100:.1f}% change):", state.get_state())
 
         # Display annotated frame
         annotated_frame = results[0].plot()
