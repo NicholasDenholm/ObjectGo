@@ -2,6 +2,7 @@ from ultralytics import YOLO
 import cv2
 import random
 import requests
+import time
 
 # ----- CONFIG -----
 MODEL_NAME = "yolov8n.pt"
@@ -22,14 +23,30 @@ class DetectionState:
 
     def update(self, results, model):
         """
-        Update the state with YOLO results.
+        Update the state with YOLO results by merging counts
+        instead of overwriting.
+        """
+        new_detections = self._extract_objects(results, model)
+        self._merge_detections(new_detections)
+
+    def _extract_objects(self, results, model):
+        """
+        Helper: extract detected objects as a dictionary from YOLO results.
         """
         detected_objects = {}
         for r in results:
             for cls_idx in r.boxes.cls:
                 name = model.names[int(cls_idx)]
                 detected_objects[name] = detected_objects.get(name, 0) + 1
-        self.detected_objects = detected_objects
+        return detected_objects
+
+    def _merge_detections(self, new_detections):
+        """
+        Merge a new detection dictionary into the current state.
+        """
+        for name, count in new_detections.items():
+            self.detected_objects[name] = self.detected_objects.get(name, 0) + count
+
 
     def pick_random_objects(self, max_objects):
         """
@@ -62,8 +79,6 @@ def get_detected_objects_dict(results, model):
     return detected_objects
 
 # ----- Functions -----
-
-
 def send_to_api(objects_list):
     """
     Send selected objects to API endpoint as JSON payload.
@@ -96,6 +111,10 @@ def run_webcam_detection():
     """
     cap = open_webcam()
     print("Press 'q' to quit...")
+    
+    STATE_UPDATE_INTERVAL = 2  # seconds
+    last_update_time = 0  # track last update
+
 
     while True:
         ret, frame = cap.read()
@@ -106,11 +125,12 @@ def run_webcam_detection():
         # Run YOLO detection
         results = model(frame, verbose=True)
 
-        # Update state with latest detections
-        state.update(results, model)
-
-        # Access current detected objects anywhere
-        print("Current state:", state.get_state())
+        # --- Only update state every 2 seconds ---
+        current_time = time.time()
+        if current_time - last_update_time >= STATE_UPDATE_INTERVAL:
+            state.update(results, model)  # update detection state
+            last_update_time = current_time
+            print("Updated state:", state.get_state())
 
         # Display annotated frame
         annotated_frame = results[0].plot()
