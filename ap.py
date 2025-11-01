@@ -1,6 +1,5 @@
 from flask import Flask, render_template, jsonify, request
-from image_detect_api import  run_webcam_detection, get_current_object
-
+from image_detect_api import  run_webcam_detection
 # Create Flask app
 app = Flask(__name__)
 
