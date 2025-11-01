@@ -5,7 +5,7 @@ import requests
 
 # ----- CONFIG -----
 MODEL_NAME = "yolov8n.pt"
-MAX_OBJECTS_PER_FRAME = 3
+MAX_OBJECTS_PER_FRAME = 5
 STATE_UPDATE_INTERVAL = 2  # seconds between state updates
 API_ENDPOINT = "http://10.121.54.137:8000/"  # Replace with your API
 
@@ -31,15 +31,21 @@ class DetectionState:
                 detected_objects[name] = detected_objects.get(name, 0) + 1
         self.detected_objects = detected_objects
 
+    def pick_random_objects(self, max_objects):
+        """
+        Pick up to max_objects random keys from the detected objects dict.
+        """
+        if not self.detected_objects:
+            return []
+        all_objects = list(self.detected_objects.keys())
+        return random.sample(all_objects, min(max_objects, len(all_objects)))
+
     def get_state(self):
-        """
-        Return the current detected objects dictionary.
-        """
         return self.detected_objects
 
 state = DetectionState()
 
-# ----- Functions -----
+# ------ Getters -------
 def get_current_objects():
     return state.get_state()
 
@@ -55,14 +61,8 @@ def get_detected_objects_dict(results, model):
             detected_objects[name] = detected_objects.get(name, 0) + 1
     return detected_objects
 
-def pick_random_objects(detected_dict, max_objects):
-    """
-    Pick up to max_objects random keys from the detected objects dict.
-    """
-    if not detected_dict:
-        return []
-    all_objects = list(detected_dict.keys())
-    return random.sample(all_objects, min(max_objects, len(all_objects)))
+# ----- Functions -----
+
 
 def send_to_api(objects_list):
     """
@@ -106,18 +106,6 @@ def run_webcam_detection():
         # Run YOLO detection
         results = model(frame, verbose=True)
 
-        '''
-        # Extract objects as dictionary
-        detected_objects_dict = get_detected_objects_dict(results, model)
-        if detected_objects_dict:
-            print("Detected objects:", detected_objects_dict)
-
-            # Pick random objects
-            random_objects = pick_random_objects(detected_objects_dict, MAX_OBJECTS_PER_FRAME)
-            print("Random objects selected:", random_objects)
-
-            # Send to API
-        '''
         # Update state with latest detections
         state.update(results, model)
 
@@ -141,5 +129,5 @@ def run_webcam_detection():
     cv2.destroyAllWindows()
 
 # ----- Entry point -----
-if __name__ == "__main__":
-    run_webcam_detection()
+#if __name__ == "__main__":
+    #run_webcam_detection()
