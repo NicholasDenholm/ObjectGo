@@ -12,12 +12,10 @@
       height: 100vh;
       display: flex;
     }
-
     .layout {
       display: flex;
       width: 100%;
     }
-
     .left-panel {
       flex: 2;
       display: flex;
@@ -25,7 +23,6 @@
       align-items: center;
       padding: 1rem;
     }
-
     .video-box {
       background: #020617;
       border: 1px solid rgba(148, 163, 184, 0.15);
@@ -37,15 +34,21 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      position: relative;
     }
-
-    .video-box img {
+    /* hidden by default */
+    #videoStream {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      background: #0f172a;
+      display: none;
     }
-
+    /* placeholder before start */
+    .placeholder {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 0.85rem;
+    }
     .right-panel {
       flex: 1;
       display: flex;
@@ -55,7 +58,6 @@
       gap: 1rem;
       padding: 1rem 2rem;
     }
-
     button {
       width: 240px;
       background: linear-gradient(135deg, #0ea5e9, #38bdf8);
@@ -69,13 +71,15 @@
       box-shadow: 0 8px 20px rgba(56, 189, 248, 0.4);
       transition: all 0.2s ease;
     }
-
     button:hover {
       transform: translateY(-3px);
       box-shadow: 0 12px 24px rgba(56, 189, 248, 0.6);
       opacity: 0.95;
     }
-
+    #stopModelBtn {
+      background:#f97316;
+      box-shadow:0 8px 20px rgba(249,115,22,0.4);
+    }
     #response {
       margin-top: 1rem;
       font-size: 0.9rem;
@@ -84,7 +88,6 @@
       min-height: 2rem;
       width: 100%;
     }
-
     pre {
       background: rgba(2, 6, 23, 0.3);
       border: 1px solid rgba(148, 163, 184, 0.12);
@@ -103,14 +106,18 @@
   <div class="layout">
     <div class="left-panel">
       <div class="video-box">
-        <!-- this is the actual YOLO webcam -->
-        <img src="/video_feed" alt="Webcam stream (YOLO)">
+        <!-- this is the actual YOLO webcam, but we set src LATER -->
+        <img id="videoStream" alt="Webcam stream (YOLO)">
+        <div id="videoPlaceholder" class="placeholder">
+          webcam will appear here<br>
+          click "Start model"
+        </div>
       </div>
     </div>
     <div class="right-panel">
       <button id="startModelBtn">Start model</button>
       <button id="requestBtn">Request</button>
-      <button id="stopModelBtn" style="background:#f97316; box-shadow:0 8px 20px rgba(249,115,22,0.4);">Stop model</button>
+      <button id="stopModelBtn">Stop model</button>
       <div id="response"></div>
       <pre id="objectsBox" style="display:none;"></pre>
     </div>
@@ -119,28 +126,8 @@
   <script>
     const responseEl = document.getElementById("response");
     const objectsBox = document.getElementById("objectsBox");
+    const videoEl = document.getElementById("videoStream");
+    const placeholderEl = document.getElementById("videoPlaceholder");
 
-    document.getElementById("startModelBtn").addEventListener("click", async () => {
-      const res = await fetch("/api/start_model");
-      const data = await res.json();
-      responseEl.textContent = data.message;
-    });
-
-    document.getElementById("requestBtn").addEventListener("click", async () => {
-      const res = await fetch("/api/request");
-      const data = await res.json();
-      responseEl.textContent = data.message;
-      if (data.objects) {
-        objectsBox.style.display = "block";
-        objectsBox.textContent = JSON.stringify(data.objects, null, 2);
-      }
-    });
-
-    document.getElementById("stopModelBtn").addEventListener("click", async () => {
-      const res = await fetch("/api/stop_model");
-      const data = await res.json();
-      responseEl.textContent = data.message;
-    });
-  </script>
-</body>
-</html>
+    // 1) START MODEL
+    document.getElementById("startModelBtn").add
