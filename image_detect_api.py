@@ -9,7 +9,6 @@ import threading
 MODEL_NAME = "yolov8n.pt"
 MAX_OBJECTS_PER_FRAME = 10
 STATE_UPDATE_INTERVAL = 2  # seconds between state updates
-API_ENDPOINT = "http://10.121.54.137:8000/"  # Replace with your API
 
 # ----- Load YOLO model ----
 model = YOLO(MODEL_NAME)
@@ -27,6 +26,7 @@ class DetectionState:
     def __init__(self):
         self.detected_objects = {}  # dictionary: object name -> count
         self.latest_frame = None
+        self.previous_objects = {}  # store last detected counts
 
     def update(self, results, model):
         """
@@ -35,13 +35,14 @@ class DetectionState:
         """
         #new_detections = self._extract_objects(results, model)
         #self._merge_detections(new_detections)
-        new_detections = self._extract_objects_conf(results, model)
+        confidence_threshold = 0.5
+        new_detections = self._extract_objects_conf(results, model, confidence_threshold)
         self._merge_detections_conf(new_detections)
 
     def new_frame(self, frame):
         self.latest_frame = frame
 
-    def _extract_objects_conf(self, results, model):
+    def _extract_objects_conf(self, results, model, confidence_threshold):
         """
         Extract detected objects as {object_name: [confidences]} from YOLO results.
         """
@@ -50,7 +51,8 @@ class DetectionState:
             for cls_idx, conf in zip(r.boxes.cls, r.boxes.conf):
                 name = model.names[int(cls_idx)]
                 conf_value = round (float(conf.item()), 2)  # convert tensor to float
-                detected_objects[name] = conf_value  # keep only latest
+                if conf_value > confidence_threshold:
+                    detected_objects[name] = conf_value  # keep only latest
                 #detected_objects.setdefault(name, []).append(conf_value) #append to a running list
         return detected_objects
         
@@ -128,6 +130,7 @@ def get_latest_frame():
 def stop_detection():
     stop_event.set()
     state.detected_objects = {}
+    state.previous_objects = {}
     state.new_frame(None)
     
 
@@ -136,6 +139,7 @@ def send_to_api(objects_list):
     """
     Send selected objects to API endpoint as JSON payload.
     """
+    API_ENDPOINT = None
     if not objects_list:
         return
     payload = {"objects": objects_list}
@@ -169,9 +173,9 @@ def run_webcam_detection():
     cap = open_webcam()
     print("Press 'q' to quit...")
     
-    STATE_UPDATE_INTERVAL = 2  # seconds
+    STATE_UPDATE_INTERVAL = 5  # seconds
     last_update_time = 0  # track last update
-    previous_objects = {}  # store last detected counts
+    
 
 
 
@@ -205,14 +209,14 @@ def run_webcam_detection():
             total_old = sum(old.values()) or 1
             return total_diff / total_old
 
-        ratio = compute_change_ratio(previous_objects, current_objects)
+        ratio = compute_change_ratio(state.previous_objects, current_objects)
 
-        # --- Update only if >20% change OR 2s passed ---
+        # --- Update only if >20% change OR 5s passed ---
         current_time = time.time()
         if ratio > 0.2 or (current_time - last_update_time >= STATE_UPDATE_INTERVAL):
             state.update(results, model)
             last_update_time = current_time
-            previous_objects = current_objects
+            state.previous_objects = current_objects
             print(f"Updated state ({ratio*100:.1f}% change):", state.get_state())
 
         # Display annotated frame
