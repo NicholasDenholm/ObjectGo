@@ -79,21 +79,32 @@ def receive_objects():
 
 @app.route("/video_feed")
 def video_feed():
-    def gen():
+    def gen_frames():
         while True:
             frame = image_detect_api.get_latest_frame()
+
             if frame is None:
+                # no frame yet → don’t hammer the browser
+                time.sleep(0.05)
                 continue
-            import cv2
-            ok, jpeg = cv2.imencode(".jpg", frame)
+
+            ok, buffer = cv2.imencode(".jpg", frame)
             if not ok:
+                time.sleep(0.05)
                 continue
+
+            jpg_bytes = buffer.tobytes()
+            # send proper multipart chunk
             yield (
                 b"--frame\r\n"
-                b"Content-Type: image/jpeg\r\n\r\n" + jpeg.tobytes() + b"\r\n"
+                b"Content-Type: image/jpeg\r\n"
+                b"Content-Length: " + f"{len(jpg_bytes)}".encode() + b"\r\n\r\n" +
+                jpg_bytes + b"\r\n"
             )
+            # small cooldown so the browser doesn’t freak out
+            time.sleep(0.03)
 
-    return Response(gen(), mimetype="multipart/x-mixed-replace; boundary=frame")
+    return Response(gen_frames(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 
 # ----- Run server -----
