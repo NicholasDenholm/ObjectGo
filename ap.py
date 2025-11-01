@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, Response, jsonify, request
 import image_detect_api 
 import threading
 # Create Flask app
