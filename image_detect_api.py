@@ -6,12 +6,43 @@ import requests
 # ----- CONFIG -----
 MODEL_NAME = "yolov8n.pt"
 MAX_OBJECTS_PER_FRAME = 3
-API_ENDPOINT = "http://127.0.0.1:8000/"  # Replace with your API
+STATE_UPDATE_INTERVAL = 2  # seconds between state updates
+API_ENDPOINT = "http://10.121.54.137:8000/"  # Replace with your API
 
 # ----- Load YOLO model ----
 model = YOLO(MODEL_NAME)
 
+
+class DetectionState:
+    """
+    Simple class to hold the latest detected objects.
+    """
+    def __init__(self):
+        self.detected_objects = {}  # dictionary: object name -> count
+
+    def update(self, results, model):
+        """
+        Update the state with YOLO results.
+        """
+        detected_objects = {}
+        for r in results:
+            for cls_idx in r.boxes.cls:
+                name = model.names[int(cls_idx)]
+                detected_objects[name] = detected_objects.get(name, 0) + 1
+        self.detected_objects = detected_objects
+
+    def get_state(self):
+        """
+        Return the current detected objects dictionary.
+        """
+        return self.detected_objects
+
+state = DetectionState()
+
 # ----- Functions -----
+def get_current_objects():
+    return state.get_state()
+
 def get_detected_objects_dict(results, model):
     """
     Extract detected objects from YOLO results and return a dictionary
@@ -75,6 +106,7 @@ def run_webcam_detection():
         # Run YOLO detection
         results = model(frame, verbose=True)
 
+        '''
         # Extract objects as dictionary
         detected_objects_dict = get_detected_objects_dict(results, model)
         if detected_objects_dict:
@@ -85,7 +117,16 @@ def run_webcam_detection():
             print("Random objects selected:", random_objects)
 
             # Send to API
-            send_to_api(random_objects)
+        '''
+        # Update state with latest detections
+        state.update(results, model)
+
+        # Access current detected objects anywhere
+        print("Current state:", state.get_state())
+
+        # Display annotated frame
+        annotated_frame = results[0].plot()
+        cv2.imshow("YOLO Detection", annotated_frame)            
 
         # Draw detections
         annotated_frame = results[0].plot()
@@ -95,6 +136,7 @@ def run_webcam_detection():
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
+    
     cap.release()
     cv2.destroyAllWindows()
 
