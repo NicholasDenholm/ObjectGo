@@ -6,7 +6,7 @@ import requests
 # ----- CONFIG -----
 MODEL_NAME = "yolov8n.pt"
 MAX_OBJECTS_PER_FRAME = 3
-API_ENDPOINT = "https://example.com/api/objects"  # Replace with your API
+API_ENDPOINT = "http://127.0.0.1:8000/"  # Replace with your API
 
 # ----- Load YOLO model ----
 model = YOLO(MODEL_NAME)
@@ -85,7 +85,7 @@ def run_webcam_detection():
             print("Random objects selected:", random_objects)
 
             # Send to API
-            #send_to_api(random_objects)
+            send_to_api(random_objects)
 
         # Draw detections
         annotated_frame = results[0].plot()
