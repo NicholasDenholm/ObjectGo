@@ -12,10 +12,7 @@
       height: 100vh;
       display: flex;
     }
-    .layout {
-      display: flex;
-      width: 100%;
-    }
+    .layout { display: flex; width: 100%; }
     .left-panel {
       flex: 2;
       display: flex;
@@ -87,7 +84,7 @@
       width: 100%;
     }
 
-    /* detected objects panel (scrollable) */
+    /* scrollable detected objects panel */
     #objectsPanel {
       display: none;
       width: 100%;
@@ -98,12 +95,8 @@
       scrollbar-width: thin;
       scrollbar-color: #38bdf8 #0f172a;
     }
-    #objectsPanel::-webkit-scrollbar {
-      width: 8px;
-    }
-    #objectsPanel::-webkit-scrollbar-track {
-      background: #0f172a;
-    }
+    #objectsPanel::-webkit-scrollbar { width: 8px; }
+    #objectsPanel::-webkit-scrollbar-track { background: #0f172a; }
     #objectsPanel::-webkit-scrollbar-thumb {
       background-color: #38bdf8;
       border-radius: 6px;
@@ -140,9 +133,7 @@
       box-shadow: 0 4px 12px rgba(56,189,248,0.1);
       transition: all 0.2s ease-in-out;
     }
-    .object-row:hover {
-      transform: scale(1.02);
-    }
+    .object-row:hover { transform: scale(1.02); }
     .object-name {
       color: #f1f5f9;
       font-weight: 500;
@@ -188,18 +179,21 @@
     const objectsPanel = document.getElementById("objectsPanel");
     const objectsGrid = document.getElementById("objectsGrid");
 
-    // helper to render objects (sorted)
+    // we'll store poll timer here so we can stop it
+    let pollTimer = null;
+
+    // render function
     function renderObjects(objs) {
       objectsPanel.style.display = "block";
       objectsGrid.innerHTML = "";
 
       const entries = Object.entries(objs || {});
       if (entries.length === 0) {
-        objectsGrid.innerHTML = `<div style="text-align:center; color:#94a3b8; font-size:0.8rem;">No objects detected.</div>`;
+        objectsGrid.innerHTML = `<div style="text-align:center; color:#94a3b8; font-size:0.8rem;">No objects detected yet...</div>`;
         return;
       }
 
-      // sort highest value first
+      // sort by count/value desc
       entries.sort((a, b) => b[1] - a[1]);
 
       entries.forEach(([name, count]) => {
@@ -225,19 +219,22 @@
       const data = await res.json();
       responseEl.textContent = data.message;
 
-      // show video now
+      // show video
       videoEl.src = "/video_feed";
       videoEl.style.display = "block";
       placeholderEl.style.display = "none";
 
-      // immediately fetch detected objects once
-      try {
-        const r = await fetch("/api/request");
-        const d = await r.json();
-        renderObjects(d.objects || {});
-      } catch (err) {
-        console.error(err);
-      }
+      // start polling every 1.5s for latest detections
+      if (pollTimer) clearInterval(pollTimer);
+      pollTimer = setInterval(async () => {
+        try {
+          const r = await fetch("/api/request");
+          const d = await r.json();
+          renderObjects(d.objects || {});
+        } catch (err) {
+          console.log("poll error", err);
+        }
+      }, 1500);
     });
 
     // STOP MODEL
@@ -249,6 +246,12 @@
       videoEl.style.display = "none";
       videoEl.removeAttribute("src");
       placeholderEl.style.display = "block";
+
+      // stop polling
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
     });
   </script>
 </body>
