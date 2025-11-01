@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AI Object Capture & Generation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: radial-gradient(circle at top, #1e293b, #0f172a 80%);
+      color: #f1f5f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    button {
+      display: block;
+      width: 280px;
+      margin: 1rem auto;
+      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+      color: #0f172a;
+      border: none;
+      padding: 1.2rem 3rem;
+      font-size: 1.3rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 8px 20px rgba(56, 189, 248, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 24px rgba(56, 189, 248, 0.6);
+      opacity: 0.95;
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: 0 6px 16px rgba(56, 189, 248, 0.3);
+    }
+
+    #response {
+      margin-top: 1.5rem;
+      font-size: 1rem;
+      color: #bae6fd;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button id="startModelBtn">Start Model</button>
+    <button id="requestBtn">Request</button>
+    <div id="response"></div>
+  </div>
+
+  <script>
+    // When "Start Model" is clicked
+    document.getElementById("startModelBtn").addEventListener("click", async () => {
+      const res = await fetch("/api/start_model");
+      const data = await res.json();
+      document.getElementById("response").innerText = data.message;
+    });
+
+    // When "Request" is clicked
+    document.getElementById("requestBtn").addEventListener("click", async () => {
+      const res = await fetch("/api/request");
+      const data = await res.json();
+      document.getElementById("response").innerText = data.message;
+    });
+  </script>
+</body>
+</html>
