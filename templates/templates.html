@@ -95,7 +95,22 @@
       width: 100%;
       max-width: 340px;
       margin-top: 0.5rem;
+      max-height: 350px; /* limits height */
+      overflow-y: auto; /* makes it scrollable */
+      scrollbar-width: thin;
+      scrollbar-color: #38bdf8 #0f172a;
     }
+    #objectsPanel::-webkit-scrollbar {
+      width: 8px;
+    }
+    #objectsPanel::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    #objectsPanel::-webkit-scrollbar-thumb {
+      background-color: #38bdf8;
+      border-radius: 6px;
+    }
+
     #objectsPanelInner {
       background: rgba(30,41,59,0.6);
       backdrop-filter: blur(8px);
@@ -148,7 +163,6 @@
   <div class="layout">
     <div class="left-panel">
       <div class="video-box">
-        <!-- this is the actual YOLO webcam, but we set src LATER -->
         <img id="videoStream" alt="Webcam stream (YOLO)">
         <div id="videoPlaceholder" class="placeholder">
           webcam will appear here<br>
@@ -162,7 +176,6 @@
       <button id="stopModelBtn">Stop model</button>
       <div id="response"></div>
 
-      <!-- nicer detected objects panel -->
       <div id="objectsPanel">
         <div id="objectsPanelInner">
           <h3 id="objectsPanelTitle">Detected Objects</h3>
@@ -179,25 +192,21 @@
     const objectsPanel = document.getElementById("objectsPanel");
     const objectsGrid = document.getElementById("objectsGrid");
 
-    // START MODEL
     document.getElementById("startModelBtn").addEventListener("click", async () => {
       const res = await fetch("/api/start_model");
       const data = await res.json();
       responseEl.textContent = data.message;
 
-      // show video now
       videoEl.src = "/video_feed";
       videoEl.style.display = "block";
       placeholderEl.style.display = "none";
     });
 
-    // REQUEST OBJECTS (ranked highest value first)
     document.getElementById("requestBtn").addEventListener("click", async () => {
       const res = await fetch("/api/request");
       const data = await res.json();
       responseEl.textContent = data.message;
 
-      // always show the panel
       objectsPanel.style.display = "block";
       objectsGrid.innerHTML = "";
 
@@ -209,7 +218,7 @@
         return;
       }
 
-      // sort by value descending
+      // sort highest count first
       entries.sort((a, b) => b[1] - a[1]);
 
       entries.forEach(([name, count]) => {
@@ -229,13 +238,11 @@
       });
     });
 
-    // STOP MODEL
     document.getElementById("stopModelBtn").addEventListener("click", async () => {
       const res = await fetch("/api/stop_model");
       const data = await res.json();
       responseEl.textContent = data.message;
 
-      // hide video again
       videoEl.style.display = "none";
       videoEl.removeAttribute("src");
       placeholderEl.style.display = "block";
