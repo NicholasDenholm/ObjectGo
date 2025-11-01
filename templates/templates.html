@@ -36,14 +36,12 @@
       align-items: center;
       position: relative;
     }
-    /* hidden by default */
     #videoStream {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: none;
     }
-    /* placeholder before start */
     .placeholder {
       text-align: center;
       color: #94a3b8;
@@ -89,14 +87,14 @@
       width: 100%;
     }
 
-    /* detected objects panel */
+    /* detected objects panel (scrollable) */
     #objectsPanel {
       display: none;
       width: 100%;
       max-width: 340px;
       margin-top: 0.5rem;
-      max-height: 350px; /* limits height */
-      overflow-y: auto; /* makes it scrollable */
+      max-height: 350px;
+      overflow-y: auto;
       scrollbar-width: thin;
       scrollbar-color: #38bdf8 #0f172a;
     }
@@ -110,7 +108,6 @@
       background-color: #38bdf8;
       border-radius: 6px;
     }
-
     #objectsPanelInner {
       background: rgba(30,41,59,0.6);
       backdrop-filter: blur(8px);
@@ -172,7 +169,6 @@
     </div>
     <div class="right-panel">
       <button id="startModelBtn">Start model</button>
-      <button id="requestBtn">Request</button>
       <button id="stopModelBtn">Stop model</button>
       <div id="response"></div>
 
@@ -192,33 +188,18 @@
     const objectsPanel = document.getElementById("objectsPanel");
     const objectsGrid = document.getElementById("objectsGrid");
 
-    document.getElementById("startModelBtn").addEventListener("click", async () => {
-      const res = await fetch("/api/start_model");
-      const data = await res.json();
-      responseEl.textContent = data.message;
-
-      videoEl.src = "/video_feed";
-      videoEl.style.display = "block";
-      placeholderEl.style.display = "none";
-    });
-
-    document.getElementById("requestBtn").addEventListener("click", async () => {
-      const res = await fetch("/api/request");
-      const data = await res.json();
-      responseEl.textContent = data.message;
-
+    // helper to render objects (sorted)
+    function renderObjects(objs) {
       objectsPanel.style.display = "block";
       objectsGrid.innerHTML = "";
 
-      const objs = data.objects || {};
-      const entries = Object.entries(objs);
-
+      const entries = Object.entries(objs || {});
       if (entries.length === 0) {
         objectsGrid.innerHTML = `<div style="text-align:center; color:#94a3b8; font-size:0.8rem;">No objects detected.</div>`;
         return;
       }
 
-      // sort highest count first
+      // sort highest value first
       entries.sort((a, b) => b[1] - a[1]);
 
       entries.forEach(([name, count]) => {
@@ -236,8 +217,30 @@
         row.append(label, countEl);
         objectsGrid.appendChild(row);
       });
+    }
+
+    // START MODEL
+    document.getElementById("startModelBtn").addEventListener("click", async () => {
+      const res = await fetch("/api/start_model");
+      const data = await res.json();
+      responseEl.textContent = data.message;
+
+      // show video now
+      videoEl.src = "/video_feed";
+      videoEl.style.display = "block";
+      placeholderEl.style.display = "none";
+
+      // immediately fetch detected objects once
+      try {
+        const r = await fetch("/api/request");
+        const d = await r.json();
+        renderObjects(d.objects || {});
+      } catch (err) {
+        console.error(err);
+      }
     });
 
+    // STOP MODEL
     document.getElementById("stopModelBtn").addEventListener("click", async () => {
       const res = await fetch("/api/stop_model");
       const data = await res.json();
