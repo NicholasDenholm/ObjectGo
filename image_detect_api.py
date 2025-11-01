@@ -3,16 +3,22 @@ import cv2
 import random
 import requests
 import time
+import threading
 
 # ----- CONFIG -----
 MODEL_NAME = "yolov8n.pt"
-MAX_OBJECTS_PER_FRAME = 5
+MAX_OBJECTS_PER_FRAME = 10
 STATE_UPDATE_INTERVAL = 2  # seconds between state updates
 API_ENDPOINT = "http://10.121.54.137:8000/"  # Replace with your API
 
 # ----- Load YOLO model ----
 model = YOLO(MODEL_NAME)
 
+# this will store the latest frame for the web
+latest_frame = None
+
+# event to stop the loop from Flask
+stop_event = threading.Event()
 
 class DetectionState:
     """
@@ -20,6 +26,7 @@ class DetectionState:
     """
     def __init__(self):
         self.detected_objects = {}  # dictionary: object name -> count
+        self.latest_frame = None
 
     def update(self, results, model):
         """
@@ -28,6 +35,9 @@ class DetectionState:
         """
         new_detections = self._extract_objects(results, model)
         self._merge_detections(new_detections)
+
+    def new_frame(self, frame):
+        self.latest_frame = frame
 
     def _extract_objects(self, results, model):
         """
@@ -78,6 +88,14 @@ def get_detected_objects_dict(results, model):
             detected_objects[name] = detected_objects.get(name, 0) + 1
     return detected_objects
 
+def get_latest_frame():
+    return state.latest_frame
+
+def stop_detection():
+    stop_event.set()
+    state.new_frame(None)
+    
+
 # ----- Functions -----
 def send_to_api(objects_list):
     """
@@ -109,6 +127,10 @@ def run_webcam_detection():
     Main loop: capture frames, detect objects, pick random objects,
     send to API, and display annotated frame.
     """
+    latest_frame = None
+    # clear stop signal when starting
+    stop_event.clear()
+
     cap = open_webcam()
     print("Press 'q' to quit...")
     
@@ -138,11 +160,15 @@ def run_webcam_detection():
 
         # Draw detections
         annotated_frame = results[0].plot()
+        latest_frame = annotated_frame
+        state.new_frame(latest_frame)
+        #state.latest_frame = latest_frame
         cv2.imshow("YOLO Webcam Detection", annotated_frame)
+        cv2.waitKey(1)
 
         # Quit on 'q'
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+        #if cv2.waitKey(1) & 0xFF == ord('q'):
+            #break
 
     
     cap.release()
