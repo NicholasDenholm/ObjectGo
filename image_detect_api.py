@@ -8,7 +8,7 @@ MODEL_NAME = "yolov8n.pt"
 MAX_OBJECTS_PER_FRAME = 3
 API_ENDPOINT = "https://example.com/api/objects"  # Replace with your API
 
-# ----- Load YOLO model -----
+# ----- Load YOLO model ----
 model = YOLO(MODEL_NAME)
 
 # ----- Functions -----
