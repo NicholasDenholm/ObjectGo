@@ -89,7 +89,7 @@
       width: 100%;
     }
 
-    /* NEW: detected objects panel */
+    /* detected objects panel */
     #objectsPanel {
       display: none;
       width: 100%;
@@ -191,38 +191,42 @@
       placeholderEl.style.display = "none";
     });
 
-    // REQUEST OBJECTS
+    // REQUEST OBJECTS (ranked highest value first)
     document.getElementById("requestBtn").addEventListener("click", async () => {
       const res = await fetch("/api/request");
       const data = await res.json();
       responseEl.textContent = data.message;
 
-      if (data.objects && Object.keys(data.objects).length > 0) {
-        // show panel
-        objectsPanel.style.display = "block";
-        // clear old
-        objectsGrid.innerHTML = "";
+      // always show the panel
+      objectsPanel.style.display = "block";
+      objectsGrid.innerHTML = "";
 
-        // build cards
-        Object.entries(data.objects).forEach(([name, count]) => {
-          const row = document.createElement("div");
-          row.className = "object-row";
+      const objs = data.objects || {};
+      const entries = Object.entries(objs);
 
-          const label = document.createElement("span");
-          label.className = "object-name";
-          label.textContent = name.toUpperCase();
-
-          const countEl = document.createElement("span");
-          countEl.className = "object-count";
-          countEl.textContent = count;
-
-          row.append(label, countEl);
-          objectsGrid.appendChild(row);
-        });
-      } else {
-        objectsPanel.style.display = "block";
+      if (entries.length === 0) {
         objectsGrid.innerHTML = `<div style="text-align:center; color:#94a3b8; font-size:0.8rem;">No objects detected.</div>`;
+        return;
       }
+
+      // sort by value descending
+      entries.sort((a, b) => b[1] - a[1]);
+
+      entries.forEach(([name, count]) => {
+        const row = document.createElement("div");
+        row.className = "object-row";
+
+        const label = document.createElement("span");
+        label.className = "object-name";
+        label.textContent = name.toUpperCase();
+
+        const countEl = document.createElement("span");
+        countEl.className = "object-count";
+        countEl.textContent = count;
+
+        row.append(label, countEl);
+        objectsGrid.appendChild(row);
+      });
     });
 
     // STOP MODEL
