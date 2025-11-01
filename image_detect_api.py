@@ -33,13 +33,47 @@ class DetectionState:
         Update the state with YOLO results by merging counts
         instead of overwriting.
         """
-        new_detections = self._extract_objects(results, model)
-        self._merge_detections(new_detections)
+        #new_detections = self._extract_objects(results, model)
+        #self._merge_detections(new_detections)
+        new_detections = self._extract_objects_conf(results, model)
+        self._merge_detections_conf(new_detections)
 
     def new_frame(self, frame):
         self.latest_frame = frame
 
-    def _extract_objects(self, results, model):
+    def _extract_objects_conf(self, results, model):
+        """
+        Extract detected objects as {object_name: [confidences]} from YOLO results.
+        """
+        detected_objects = {}
+        for r in results:
+            for cls_idx, conf in zip(r.boxes.cls, r.boxes.conf):
+                name = model.names[int(cls_idx)]
+                conf_value = round (float(conf.item()), 2)  # convert tensor to float
+                detected_objects[name] = conf_value  # keep only latest
+                #detected_objects.setdefault(name, []).append(conf_value) #append to a running list
+        return detected_objects
+        
+    def _merge_detections_conf(self, new_detections):
+        """
+        Merge new detections into the current state.
+        Replaces old confidence values with the latest ones.
+        """
+        for name, conf_value in new_detections.items():
+            self.detected_objects[name] = conf_value
+
+    def _merge_detections_conf_runninglist(self, new_detections):
+        """
+        Merge a new detection dictionary into the current state,
+        appending confidence scores for existing objects.
+        """
+        for name, conf_list in new_detections.items():
+            if name in self.detected_objects:
+                self.detected_objects[name].extend(conf_list)
+            else:
+                self.detected_objects[name] = conf_list
+
+    def _extract_objects_count(self, results, model):
         """
         Helper: extract detected objects as a dictionary from YOLO results.
         """
@@ -50,7 +84,7 @@ class DetectionState:
                 detected_objects[name] = detected_objects.get(name, 0) + 1
         return detected_objects
 
-    def _merge_detections(self, new_detections):
+    def _merge_detections_count(self, new_detections):
         """
         Merge a new detection dictionary into the current state.
         """
@@ -138,7 +172,7 @@ def run_webcam_detection():
     last_update_time = 0  # track last update
 
 
-    while True:
+    while not stop_event.is_set():
         ret, frame = cap.read()
         if not ret:
             print("Error: Failed to capture frame.")
