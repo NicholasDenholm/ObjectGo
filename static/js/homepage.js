@@ -17,6 +17,90 @@ function showToast(message) {
   setTimeout(() => toast.classList.remove('show'), 2000);
 }
 
+// Function to send current objects to backend and display results
+async function sendCurrentObjects() {
+  const objectsGrid = document.getElementById("objectsGrid");
+  const objectNames = objectsGrid.querySelectorAll(".object-name");
+  
+  // Extract object names from the displayed elements
+  const currentObjects = Array.from(objectNames).map(span => 
+    span.textContent.toLowerCase().trim()
+  );
+  
+  console.log("Sending objects to backend:", currentObjects);
+  showToast("Generating music and image...");
+  
+  try {
+    const response = await fetch("/api/objects", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ objects: currentObjects })
+    });
+    
+    const data = await response.json();
+    console.log("Backend response:", data);
+    
+    // Display the generated image
+    if (data.image) {
+      const imgElement = document.getElementById("generatedImage");
+      imgElement.src = `data:image/png;base64,${data.image}`;
+      imgElement.style.display = "block";
+    }
+    
+    // Play the generated music
+    if (data.music) {
+      const audioElement = document.getElementById("generatedAudio");
+      audioElement.src = `data:audio/wav;base64,${data.music}`;
+      audioElement.style.display = "block";
+      // Optional: auto-play
+      // audioElement.play();
+    }
+    
+    showToast(`Generated content for ${currentObjects.length} objects!`);
+    return data;
+  } catch (error) {
+    console.error("Error sending objects:", error);
+    showToast("Error generating content");
+    return null;
+  }
+}
+/* Working version 
+// Function to send current objects to backend
+async function sendCurrentObjects() {
+  const objectsGrid = document.getElementById("objectsGrid");
+  const objectNames = objectsGrid.querySelectorAll(".object-name");
+  
+  // Extract object names from the displayed elements
+  const currentObjects = Array.from(objectNames).map(span => 
+    span.textContent.toLowerCase().trim()
+  );
+  
+  console.log("Sending objects to backend:", currentObjects);
+  
+  try {
+    const response = await fetch("/api/objects", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ objects: currentObjects })
+    });
+    
+    const data = await response.json();
+    console.log("Backend response:", data);
+    showToast(`Sent ${currentObjects.length} objects to backend`);
+    return data;
+  } catch (error) {
+    console.error("Error sending objects:", error);
+    showToast("Error sending objects");
+    return null;
+  }
+}
+*/
+
+
 function renderObjects(objs) {
   objectsPanel.style.display = "block";
   objectsGrid.innerHTML = "";
@@ -124,6 +208,10 @@ document.getElementById("stopModelBtn").addEventListener("click", async () => {
   objectsPanel.style.display = "none";
 });
 
+// SEND OBJECTS BUTTON
+document.getElementById("sendObjectsBtn").addEventListener("click", async () => {
+  await sendCurrentObjects();
+});
 
 /*
 const responseEl = document.getElementById("response");

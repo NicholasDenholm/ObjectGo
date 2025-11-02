@@ -21,13 +21,31 @@
     <div class="right-panel">
       <button id="startModelBtn">Start model</button>
       <button id="stopModelBtn">Stop model</button>
+      <button id="sendObjectsBtn">Generate Music & Image</button>
       <div id="response"></div>
 
-      <!-- YOLO detected object list (clickable for typing) -->
+      <!-- YOLO detected object list -->
       <div id="objectsPanel">
         <div id="objectsPanelInner">
           <h3 id="objectsPanelTitle">Detected Objects (Click to Type)</h3>
           <div id="objectsGrid"></div>
+        </div>
+      </div>
+
+      <!-- Generated Content Display -->
+      <div id="generatedContent" style="margin-top: 20px;">
+        <h3>Generated Content</h3>
+        
+        <!-- Image Display -->
+        <div style="margin-bottom: 20px;">
+          <h4>Generated Image:</h4>
+          <img id="generatedImage" style="display: none; max-width: 100%; border: 2px solid #ccc; border-radius: 8px;" alt="Generated image">
+        </div>
+        
+        <!-- Audio Player -->
+        <div>
+          <h4>Generated Music:</h4>
+          <audio id="generatedAudio" controls style="display: none; width: 100%;"></audio>
         </div>
       </div>
 
@@ -37,10 +55,9 @@
         <textarea id="outputText" rows="5" cols="50" readonly></textarea>
       </div>
     </div>
-  </div>
 
-  <!-- Toast notification (must be inside body, outside other divs) -->
-  <div id="toast" class="toast"></div>
+    <!-- Toast notification -->
+    <div id="toast" class="toast"></div>
 
   <script src="{{ url_for('static', filename='js/homepage.js') }}"></script>
   <script src="{{ url_for('static', filename='js/objectToText.js') }}"></script>

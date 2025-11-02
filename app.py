@@ -4,6 +4,8 @@ import threading
 import cv2
 import time
 import pyautogui
+import base64
+from io import BytesIO
 # Create Flask app
 app = Flask(__name__)
 
@@ -133,34 +135,6 @@ def type_object(obj_name):
 
     return jsonify({"typed_key": typed_key, "object_received": obj_name})
 
-'''
-@app.route("/type_objects", methods=["POST"])
-def type_objects():
-    text_mapping = image_detectNick.get_text_mapping()
-    data = request.json
-    detected_objects = data.get("objects", [])
-    typed_keys = []
-
-    for obj_name in detected_objects:
-        if obj_name in text_mapping:
-            key = text_mapping[obj_name]
-            typed_keys.append(key)
-            pyautogui.typewrite(key)
-        else:
-            typed_keys.append("")  # or skip unmapped objects
-
-    return jsonify({"typed_keys": typed_keys})
-
-@app.route('/type_object/<obj_name>', methods=['POST'])
-def type_object(obj_name):
-    mapping = image_detectNick.get_text_mapping()
-    typed_key = mapping.get(obj_name, "")
-    if typed_key:
-        # Optional: also trigger pyautogui typing if you want real keyboard input
-        pyautogui.typewrite(typed_key)
-        print(f"Detected {obj_name} → typing '{typed_key}'")
-    return jsonify({"typed_key": typed_key})
-'''
 
 # ----- Object Info ------
 
@@ -175,6 +149,33 @@ def get_objects():
 
 @app.route('/api/objects', methods=['POST'])
 def receive_objects():
+    """
+    Example API endpoint to receive detected objects.
+    Expects JSON payload like: {"objects": ["person", "bicycle"]}
+    """
+    data = request.get_json()
+    if not data or "objects" not in data:
+        return jsonify({"error": "No objects provided"}), 400
+    
+    objects = data["objects"]
+    
+    # Generate music and image
+    music, image = localmodel.gen_all(objects)
+    
+    # Convert to base64 for JSON response
+    # Assuming music is wav bytes and image is png bytes
+    music_base64 = base64.b64encode(music).decode('utf-8')
+    image_base64 = base64.b64encode(image).decode('utf-8')
+    
+    return jsonify({
+        "received_objects": objects,
+        "music": music_base64,
+        "image": image_base64
+    }), 200
+
+'''
+@app.route('/api/objects', methods=['POST'])
+def receive_objects():
     
     """
     Example API endpoint to receive detected objects.
@@ -186,8 +187,13 @@ def receive_objects():
         return jsonify({"error": "No objects provided"}), 400
 
     objects = data["objects"]
-    # Example: just echo back the received objects
+    
+    #TODO Call the models to generate music and image
+    music, image = localmodel.gen_all(objects)
+    
     return jsonify({"received_objects": objects}), 200
+'''
+    
 
 @app.route("/video_feed")
 def video_feed():
