@@ -16,6 +16,26 @@
           click "Start model"
         </div>
       </div>
+
+      <!-- image + music side by side -->
+      <div class="media-row">
+        <div class="generated-card" id="generatedImageCard">
+          <h3>AI Generated Image</h3>
+          <div id="generatedImageBox">
+            <span id="generatedImagePlaceholder">image will appear here when generated</span>
+            <img id="generatedImagePreview" src="" alt="Generated image">
+          </div>
+        </div>
+
+        <div class="generated-card" id="generatedMusicCard">
+          <h3>AI Generated Music</h3>
+          <div id="generatedMusicBox">
+            <span id="generatedMusicPlaceholder">music will appear here when generated</span>
+            <audio id="generatedAudio" controls></audio>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <div class="right-panel">
@@ -32,22 +52,7 @@
         </div>
       </div>
 
-      <!-- Generated Content Display -->
-      <div id="generatedContent" style="margin-top: 20px;">
-        <h3>Generated Content</h3>
-        
-        <!-- Image Display -->
-        <div style="margin-bottom: 20px;">
-          <h4>Generated Image:</h4>
-          <img id="generatedImage" style="display: none; max-width: 100%; border: 2px solid #ccc; border-radius: 8px;" alt="Generated image">
-        </div>
-        
-        <!-- Audio Player -->
-        <div>
-          <h4>Generated Music:</h4>
-          <audio id="generatedAudio" controls style="display: none; width: 100%;"></audio>
-        </div>
-      </div>
+      
 
       <!-- Output Text Area -->
       <div id="textTypingPanel">

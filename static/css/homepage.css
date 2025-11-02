@@ -12,9 +12,21 @@ body {
 .left-panel {
   flex: 2;
   display: flex;
-  justify-content: center;
+  flex-direction: column;  /* Stacks children vertically */
+  justify-content: flex-start;  /* Aligns to top */
   align-items: center;
-  padding: 1rem;
+  padding: 10rem;
+  gap: 1rem;  /* Space between video and media row */
+}
+
+.right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 1rem;
+  padding: 10rem 10rem;
 }
 
 .video-box {
@@ -44,15 +56,6 @@ body {
   font-size: 0.85rem;
 }
 
-.right-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 2rem;
-}
 
 button {
   width: 240px;
@@ -158,6 +161,7 @@ button:hover {
   font-size: 0.95rem;
 }
 
+/* Toast */
 .toast {
   visibility: hidden;
   min-width: 220px;
@@ -180,4 +184,73 @@ button:hover {
   visibility: visible;
   opacity: 1;
   bottom: 40px;
+}
+
+/* Media row */
+.media-row {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  width: 100%;
+  max-width: 600px;
+  gap: 1rem;
+}
+
+.generated-card {
+  background: rgba(15,23,42,0.4);
+  border: 1px solid rgba(148,163,184,0.15);
+  border-radius: 12px;
+  padding: 0.8rem 1rem 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.generated-card h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  color: #e2e8f0;
+  text-align: center;
+}
+
+#generatedImageBox {
+  width: 100%;
+  height: 150px;
+  background: rgba(2,6,23,0.4);
+  border: 1px dashed rgba(148,163,184,0.35);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  overflow: hidden;
+}
+
+#generatedImagePreview {
+  max-width: 100%;
+  max-height: 100%;
+  display: none;
+}
+
+#generatedMusicBox {
+  width: 100%;
+  background: rgba(2,6,23,0.4);
+  border: 1px dashed rgba(148,163,184,0.35);
+  border-radius: 10px;
+  padding: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+#generatedAudio {
+  width: 100%;
+  display: none;
 }
