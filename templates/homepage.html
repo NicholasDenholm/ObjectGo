@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AI Object Capture & Generation</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+  
+</head>
+<body>
+  <div class="layout">
+    <div class="left-panel">
+      <div class="video-box">
+        <img id="videoStream" alt="Webcam stream (YOLO)">
+        <div id="videoPlaceholder" class="placeholder">
+          webcam will appear here<br>
+          click "Start model"
+        </div>
+      </div>
+    </div>
+    <div class="right-panel">
+      <button id="startModelBtn">Start model</button>
+      <button id="stopModelBtn">Stop model</button>
+      <div id="response"></div>
+
+      <div id="objectsPanel">
+        <div id="objectsPanelInner">
+          <h3 id="objectsPanelTitle">Detected Objects</h3>
+          <div id="objectsGrid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/homepage.js') }}"></script>
+
+
+</body>
+</html>

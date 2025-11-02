@@ -1,0 +1,85 @@
+letters:
+  apple: a
+  banana: b
+  cat: c
+  dog: d
+  elephant: e
+  fork: f
+  wine glass: g
+  cup: h
+  hot dog: i
+  bowl: j
+  keyboard: k
+  laptop: l
+  mouse: m
+  book: n
+  orange: o
+  potted plant: p
+  bed: q
+  umbrella: u
+  remote: r
+  spoon: s
+  tv: t
+  vase: v
+  bottle: w
+  clock: x
+  kite: y
+  zebra: z
+  person: ' '
+  bird: "__BACKSPACE__"
+
+numbers:
+  boat: 1
+  bicycle: 2
+  car: 3
+  chair: 4
+  couch: 5
+  traffic light: 6
+  toilet: 7
+  cow: 8
+  cell phone: 9
+
+punctuation:
+  stop sign: ":"
+  hair drier: "."
+  dining table: ","
+  backpack: "("
+  handbag: ")"
+  suitcase: "["
+  microwave: "]"
+  oven: "{"
+  refrigerator: "}"
+  toothbrush: "'"
+  scissors: '"'
+  tie: "+"
+  knife: "-"
+  sports ball: "*"
+  surfboard: "/"
+  broccoli: "="
+  bus: ">"
+  baseball glove: "<"
+
+keywords:
+  donut: def
+  horse: return
+  tennis racket: if
+  toaster: else
+  motorcycle: for
+  truck: while
+  sandwich: class
+  parking meter: import
+  train: from
+  skateboard: try
+  skis: except
+  frisbee: break
+  carrot: continue
+  baseball bat: and
+  giraffe: or
+  sheep: not
+  sink: True
+  bear: with
+  cake: as
+  bench: await
+  fire hydrant: raise
+  airplane: assert
+  teddy bear: finally

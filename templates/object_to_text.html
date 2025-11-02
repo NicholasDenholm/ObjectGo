@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Object to Text</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+</head>
+<body>
+  <div class="layout">
+
+    <div class="left-panel">
+      <div class="video-box">
+        <img id="videoStream" alt="Webcam stream (YOLO)">
+        <div id="videoPlaceholder" class="placeholder">
+          webcam will appear here<br>
+          click "Start model"
+        </div>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <button id="startModelBtn">Start model</button>
+      <button id="stopModelBtn">Stop model</button>
+      <div id="response"></div>
+
+      <!-- YOLO detected object list (clickable for typing) -->
+      <div id="objectsPanel">
+        <div id="objectsPanelInner">
+          <h3 id="objectsPanelTitle">Detected Objects (Click to Type)</h3>
+          <div id="objectsGrid"></div>
+        </div>
+      </div>
+
+      <!-- Output Text Area -->
+      <div id="textTypingPanel">
+        <h3>Output Text</h3>
+        <textarea id="outputText" rows="5" cols="50" readonly></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification (must be inside body, outside other divs) -->
+  <div id="toast" class="toast"></div>
+
+  <script src="{{ url_for('static', filename='js/homepage.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/objectToText.js') }}"></script>
+
+</body>
+</html>

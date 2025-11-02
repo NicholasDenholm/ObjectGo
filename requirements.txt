@@ -12,5 +12,8 @@ numpy>=1.25.0
 pandas>=2.0.0
 tqdm>=4.65.0
 
+# Text/keyboard processing
+pyautogui
+
 # Optional: for dataset handling
 PyYAML>=6.0
