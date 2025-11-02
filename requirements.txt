@@ -15,5 +15,19 @@ tqdm>=4.65.0
 # Text/keyboard processing
 pyautogui
 
-# Optional: for dataset handling
+# Audio processing
+scipy>=1.10.0
+
+# AI/ML Models
+transformers>=4.30.0
+huggingface-hub>=0.16.0
+
+# HTTP requests
+requests>=2.31.0
+
+# YAML
 PyYAML>=6.0
+
+# Note: SongGen appears to be a custom module
+# If it's a package, add: songgen>=version
+# If it's local code, no need to add here
